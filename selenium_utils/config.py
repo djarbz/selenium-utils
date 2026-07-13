@@ -32,5 +32,6 @@ LOG_FORMAT = "%(levelname)-8s | %(module)s:%(funcName)s:%(lineno)04d | %(message
 LOG_TRACE = logging.DEBUG + 5
 LOG_NOTICE = logging.INFO + 5
 
-WINDOW_WIDTH = 1024
-WINDOW_HEIGHT = 1904
+# In selenium_utils/config.py
+WINDOW_WIDTH = int(os.environ.get("WINDOW_WIDTH", "1024"))
+WINDOW_HEIGHT = int(os.environ.get("WINDOW_HEIGHT", "1904"))
