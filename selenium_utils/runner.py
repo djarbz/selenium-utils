@@ -14,6 +14,7 @@ from selenium_utils.misc import RUN_REPORT
 
 logger = logging.getLogger(__name__)
 
+
 def _initialize_selenium() -> SB:
     """Initializes SeleniumBase with standard shared arguments."""
     logger.info("Initializing Selenium Session...")
@@ -29,6 +30,7 @@ def _initialize_selenium() -> SB:
         save_screenshot=True,
     )
 
+
 def _log_run_report() -> None:
     """Logs the run report details if populated."""
     if not RUN_REPORT:
@@ -37,7 +39,10 @@ def _log_run_report() -> None:
     for key, value in RUN_REPORT.items():
         logger.info("%s: %s", key, value)
 
-def run_automation(app_name: str, start_url: str, logic_callback: Callable[[SB], None]) -> int:
+
+def run_automation(
+    app_name: str, start_url: str, logic_callback: Callable[[SB], None]
+) -> int:
     """
     The universal automation wrapper.
 
@@ -47,6 +52,7 @@ def run_automation(app_name: str, start_url: str, logic_callback: Callable[[SB],
         logic_callback: A function containing the project-specific automation logic.
     """
     import os
+
     os.environ["APP_NAME"] = app_name  # Makes it available for Discord webhook
 
     setup_logging()
@@ -58,7 +64,7 @@ def run_automation(app_name: str, start_url: str, logic_callback: Callable[[SB],
         logger.info("Preparing [%s] Automation...", app_name)
         with _initialize_selenium() as sb:
             try:
-                browser_ver = sb.driver.capabilities.get('browserVersion', 'Unknown')
+                browser_ver = sb.driver.capabilities.get("browserVersion", "Unknown")
                 logger.info("Using Browser version [%s]", browser_ver)
             except Exception:
                 pass

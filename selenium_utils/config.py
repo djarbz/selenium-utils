@@ -3,6 +3,7 @@
 import logging
 import os
 
+
 def get_bool_env(name: str, default_value: bool = None) -> bool:
     """Get a boolean from an environment variable with a default value."""
     true_values = ("true", "1", "t", "yes", "y", "on")

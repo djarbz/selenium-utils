@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, Protocol, Union
 
 from discord_webhook import DiscordWebhook, DiscordEmbed
-from selenium_utils.config import LOG_NOTICE, LOG_TRACE
+from selenium_utils.config import LOG_NOTICE
 from selenium_utils.misc import validate_url
 
 logger = logging.getLogger(__name__)
@@ -17,19 +17,24 @@ logger = logging.getLogger(__name__)
 _web_hook: DiscordWebhook | None = None  # pylint: disable=invalid-name
 _web_hook_url: str | None = None  # pylint: disable=invalid-name
 
+
 class WebhookError(Exception):
     """Custom exception for Webhook errors."""
+
 
 class WebhookConfigError(Exception):
     """Custom exception for Webhook configuration errors."""
 
+
 class ImageSetter(Protocol):
     def __call__(self, url: str, **kwargs: Union[str, int]) -> None: ...
+
 
 def is_valid_hex_color(color: str) -> bool:
     if not isinstance(color, str):
         return False
     return bool(re.fullmatch(r"[0-9a-fA-F]{6}", color))
+
 
 @dataclass
 class WebhookConfig:
@@ -52,6 +57,7 @@ class WebhookConfig:
         if not is_valid_hex_color(self.color):
             raise WebhookConfigError(f"Invalid hex color: {self.color}")
 
+
 def init_webhook() -> None:
     global _web_hook, _web_hook_url
     _web_hook_url = os.environ.get("APP_DISCORD_WEBHOOK_URL", "")
@@ -60,9 +66,10 @@ def init_webhook() -> None:
         validate_url(_web_hook_url)
         _web_hook = DiscordWebhook(url=_web_hook_url)
         logger.log(LOG_NOTICE, "Discord Webhook configured!")
-    except ValueError as e:
+    except ValueError:
         logger.error("Invalid Discord Webhook URL: %s", _web_hook_url)
         _web_hook = None
+
 
 def send_webhook(config: WebhookConfig, **kwargs: Any) -> None:
     if _web_hook is None:
@@ -88,6 +95,7 @@ def send_webhook(config: WebhookConfig, **kwargs: Any) -> None:
     finally:
         _clear_webhook_state()
 
+
 def _clear_webhook_state() -> None:
     if _web_hook:
         try:
@@ -96,24 +104,32 @@ def _clear_webhook_state() -> None:
         except Exception as e:
             raise WebhookError("Clearing Webhook State FAILED.") from e
 
+
 def _create_embed(config: WebhookConfig) -> DiscordEmbed:
     app_name = os.environ.get("APP_NAME", "Selenium Bot")
-    title = _truncate_string(config.title, 256, "Discord title")
+    title = _truncate_string(config.title, 256)
     embed = DiscordEmbed(title=title)
     if config.description:
-        embed.set_description(_truncate_string(config.description, 2048, "Discord description"))
+        embed.set_description(_truncate_string(config.description, 2048))
     if config.color and is_valid_hex_color(config.color):
         embed.set_color(config.color)
     embed.set_author(name=f"{app_name} Automation")
     embed.set_timestamp()
     return embed
 
-def _add_files_to_embed(embed: DiscordEmbed, image_filepath: Path = None, thumbnail_filepath: Path = None) -> None:
-    for filepath, method in [(image_filepath, embed.set_image), (thumbnail_filepath, embed.set_thumbnail)]:
+
+def _add_files_to_embed(
+    embed: DiscordEmbed, image_filepath: Path = None, thumbnail_filepath: Path = None
+) -> None:
+    for filepath, method in [
+        (image_filepath, embed.set_image),
+        (thumbnail_filepath, embed.set_thumbnail),
+    ]:
         if filepath and filepath.is_file():
             file = _add_file_to_webhook(filepath)
             if file:
                 method(url=f"attachment://{file}")
+
 
 def _add_file_to_webhook(filepath: Path) -> str | None:
     try:
@@ -124,25 +140,29 @@ def _add_file_to_webhook(filepath: Path) -> str | None:
         logger.exception("Adding file FAILED: %s", e)
         return None
 
-def _truncate_string(text: str, max_length: int, error_name: str) -> str:
+
+def _truncate_string(text: str, max_length: int) -> str:
     if len(text) > max_length:
         return text[:max_length]
     return text
 
+
 def _add_fields_to_embed(embed: DiscordEmbed, **kwargs: Any) -> None:
     for key, value in kwargs.items():
         try:
-            key = _truncate_string(str(key), 256, "field name")
-            value = _truncate_string(str(value), 1024, "field value")
+            key = _truncate_string(str(key), 256)
+            value = _truncate_string(str(value), 1024)
             embed.add_embed_field(name=key, value=value, inline=False)
         except Exception:
             pass
+
 
 def _check_field_limits(embed: DiscordEmbed) -> None:
     fields = embed.get_embed_fields()
     while len(fields) > 25:
         embed.delete_embed_field(len(fields) - 1)
         fields = embed.get_embed_fields()
+
 
 def _log_webhook_response(response):
     if response.status_code == 200:

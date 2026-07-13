@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, ParserRejectedMarkup
-from selenium.common.exceptions import JavascriptException, StaleElementReferenceException
+from selenium.common.exceptions import (
+    JavascriptException,
+    StaleElementReferenceException,
+)
 from seleniumbase import SB
 from seleniumbase.common.exceptions import TimeoutException, WebDriverException
 from seleniumbase.undetected.webelement import WebElement
@@ -18,16 +21,25 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
 class ScreenshotError(Exception):
     """Custom exception for screenshot-related errors."""
+
 
 class SaveSourceError(Exception):
     """Custom exception for save_source errors."""
 
+
 class ElementSourceError(Exception):
     """Custom exception for element source related errors."""
 
-def element_archive(sb: SB, element: WebElement, filename: str, highlight: "SeleniumSelector | None" = None) -> tuple[Path, Path]:
+
+def element_archive(
+    sb: SB,
+    element: WebElement,
+    filename: str,
+    highlight: "SeleniumSelector | None" = None,
+) -> tuple[Path, Path]:
     try:
         source = element.get_attribute("outerHTML")
         if not source:
@@ -52,11 +64,19 @@ def element_archive(sb: SB, element: WebElement, filename: str, highlight: "Sele
         image_path = element_screenshot(sb, element, filename, highlight)
     except WebDriverException as e:
         image_path = None
-        logger.error("Failed to capture screenshot of the element [%s]: %s", filename, e)
+        logger.error(
+            "Failed to capture screenshot of the element [%s]: %s", filename, e
+        )
 
     return source_path, image_path
 
-def element_screenshot(sb: SB, element: WebElement, filename: str, highlight: "SeleniumSelector | None" = None) -> Path:
+
+def element_screenshot(
+    sb: SB,
+    element: WebElement,
+    filename: str,
+    highlight: "SeleniumSelector | None" = None,
+) -> Path:
     logger.log(LOG_TRACE, "Taking a screenshot of %s", filename)
     try:
         _ = element.location_once_scrolled_into_view
@@ -64,13 +84,16 @@ def element_screenshot(sb: SB, element: WebElement, filename: str, highlight: "S
             sb.highlight(*highlight.get())
         image_path = generate_clean_filename(filename, "png")
         if not element.screenshot(str(image_path.resolve())):
-            raise ScreenshotError(f"Failed to write screenshot to file: {image_path.resolve()}")
+            raise ScreenshotError(
+                f"Failed to write screenshot to file: {image_path.resolve()}"
+            )
         logger.info("Screenshot Saved [%s]", image_path.resolve())
         return image_path
     except TimeoutException as e:
         raise ScreenshotError("Screenshot Timed Out") from e
     except Exception as e:
         raise ScreenshotError("Failed to take screenshot") from e
+
 
 def full_page_archive(sb: SB, descriptor: str = None) -> tuple[Path, Path] | None:
     from selenium_utils.browser import wait_jquery
@@ -88,8 +111,12 @@ def full_page_archive(sb: SB, descriptor: str = None) -> tuple[Path, Path] | Non
         filename = f"{descriptor}-{filename}"
 
     try:
-        full_width = sb.driver.execute_script("return document.body.parentNode.scrollWidth")
-        full_height = sb.driver.execute_script("return document.body.parentNode.scrollHeight")
+        full_width = sb.driver.execute_script(
+            "return document.body.parentNode.scrollWidth"
+        )
+        full_height = sb.driver.execute_script(
+            "return document.body.parentNode.scrollHeight"
+        )
         sb.set_window_size(full_width, full_height)
     except JavascriptException as e:
         logger.exception("Failed to Maximize browser window: %s", e)

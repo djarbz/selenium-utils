@@ -11,14 +11,16 @@ from typing import Any, Dict, Callable
 from pathvalidate import sanitize_filename
 
 from seleniumbase.fixtures import page_utils
-from selenium_utils.config import LOG_DIR, LOG_TRACE
+from selenium_utils.config import LOG_DIR
 
 logger = logging.getLogger(__name__)
 
 RUN_REPORT: Dict[str, Any] = {}
 
+
 class StepCounter:
     """Keep track of the current step index and allow progress."""
+
     def __init__(self, initial_value: int = 0):
         self._count = initial_value
 
@@ -29,7 +31,9 @@ class StepCounter:
     def get(self) -> int:
         return self._count
 
+
 step_tracker = StepCounter()
+
 
 class TerminalWidth:
     def __init__(self, fallback: int = 160):
@@ -58,10 +62,13 @@ class TerminalWidth:
         self._get_width()
         return self._width
 
+
 TERMINAL_WIDTH = TerminalWidth()
+
 
 class MisconfigurationError(Exception):
     """Custom exception for misconfiguration."""
+
 
 def validate_url(url: str) -> str:
     if not isinstance(url, str):
@@ -69,6 +76,7 @@ def validate_url(url: str) -> str:
     if not page_utils.is_valid_url(url):
         raise ValueError(f"Invalid URL: {url}")
     return url
+
 
 def print_terminal(message: str) -> None:
     if not isinstance(message, str):
@@ -81,14 +89,17 @@ def print_terminal(message: str) -> None:
     except Exception as e:
         logger.exception("Printing message to Terminal [%s] FAILED: %s", message, e)
 
+
 def center_string(text: str, fill_char: str = "*") -> None:
     padded_text = f"  {text}  "
     print(padded_text.center(TERMINAL_WIDTH.get_width(), fill_char))
+
 
 def add_run_report_item(key: str, value: Any) -> None:
     if not isinstance(key, str):
         raise TypeError(f"key must be a string, not {type(key)}")
     RUN_REPORT[key] = value
+
 
 def is_function_in_call_stack(func: Callable) -> bool:
     if not callable(func):
@@ -101,11 +112,13 @@ def is_function_in_call_stack(func: Callable) -> bool:
             return True
     return False
 
+
 def hash2hex(text: str) -> str:
     running_hash = 0
     for ch in text:
         running_hash = (running_hash * 281 ^ ord(ch) * 997) & 0xFFFFFFFF
     return hex(running_hash)[2:].upper().zfill(8)
+
 
 def generate_clean_filename(file_name: str, new_ext: str) -> Path:
     if not new_ext.startswith("."):
