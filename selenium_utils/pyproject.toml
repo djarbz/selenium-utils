@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "selenium_utils"
+version = "1.0.0"
+description = "A shared SeleniumBase automation framework wrapper."
+authors = [{ name = "djarbz" }]
+requires-python = ">=3.10"
+dependencies = [
+    "seleniumbase>=4.50.6",
+    "discord-webhook>=1.4.1",
+    "pathvalidate>=3.3.1"
+]
+
+[tool.setuptools.packages.find]
+include = ["selenium_utils*"]
