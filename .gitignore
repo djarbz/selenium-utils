@@ -1,0 +1,32 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# uv specific
+uv.lock
+
+# Python cache and distribution
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+dist/
+build/
+*.egg-info/
+
+# Testing and Logs
+latest_logs/
+*.log
+.pytest_cache/
+.coverage
+
+# IDEs
+#.vscode/
+#.idea/
+*.swp
+.DS_Store

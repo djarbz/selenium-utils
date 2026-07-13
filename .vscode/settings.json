@@ -5,11 +5,15 @@
     "LOGALL",
     "msecs",
     "pathvalidate",
+    "pycache",
     "pylint",
+    "pyproject",
     "pytest",
     "seleniumbase",
     "setuptools",
     "softprops",
+    "toplevel",
+    "venv",
     "webelement"
   ]
 }
