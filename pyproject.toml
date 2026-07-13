@@ -17,17 +17,10 @@ dependencies = [
 [tool.setuptools.packages.find]
 include = ["selenium_utils*"]
 
-[tool.pylint.messages_control]
-disable = [
-    "missing-docstring",
-    "too-few-public-methods",
-    "too-many-public-methods",
-    "too-many-arguments",
-    "too-many-positional-arguments",
-    "too-many-branches",
-    "broad-exception-caught",
-    "import-outside-toplevel",
-    "global-statement",
-    "protected-access",
-    "line-too-long"
+[tool.ruff.lint]
+ignore = [
+    "D",      # Ignore missing docstrings
+    "E501",   # Ignore line length limits
+    "BLE001", # Allow catching broad exceptions
+    "PLC0105" # Allow global variables
 ]

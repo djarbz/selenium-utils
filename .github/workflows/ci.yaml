@@ -12,7 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Test across all modern, supported Python versions
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
@@ -24,23 +23,22 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
-        cache: 'pip' # Automatically caches dependencies to speed up runs
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install the local package in editable mode
         pip install -e .
-        # Install testing and linting tools
-        pip install pylint pytest
+        # Swapped pylint for ruff
+        pip install ruff pytest
 
-    - name: Lint with Pylint
+    - name: Lint and Format with Ruff
       run: |
-        # Run Pylint strictly on your package directory
-        pylint selenium_utils
+        # Check for linting errors
+        ruff check selenium_utils
+        # Ensure code is formatted correctly (will fail if files need formatting)
+        ruff format --check selenium_utils
 
     - name: Run Unit Tests
       run: |
-        # If you write pytest unit tests in the future, they will automatically run here
-        # pytest tests/
         echo "Testing placeholder!"

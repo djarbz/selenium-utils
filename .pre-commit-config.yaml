@@ -8,16 +8,12 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
 
-  # 2. Local Pylint execution
-  - repo: local
+  # 2. Ruff Linter and Formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.21
     hooks:
-      - id: pylint
-        name: Pylint
-        entry: pylint
-        language: system
-        types: [python]
-        # Only run Pylint on the specific package directory
-        files: ^selenium_utils/
-        args:
-          - "-rn" # Only display messages
-          - "-sn" # Don't display the score
+      # Run the linter and automatically fix minor issues
+      - id: ruff
+        args: [ --fix ]
+      # Run the Ruff code formatter (replaces Black)
+      - id: ruff-format

@@ -3,7 +3,6 @@ name: Future Python Compatibility
 on:
   workflow_dispatch:
   schedule:
-    # Run at 00:00 every Monday
     - cron: '0 0 * * 1'
 
 permissions:
@@ -16,7 +15,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Define the bleeding-edge versions here
         python-version: ["3.15", "3.16"]
 
     steps:
@@ -34,27 +32,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pylint pytest
+          pip install ruff pytest
 
-      - name: Analyzing the code with pylint
+      - name: Analyzing the code with Ruff
         id: lint_step
-        # continue-on-error prevents the step from failing the whole job immediately,
-        # allowing the test step to run so we can gather full metrics.
         continue-on-error: true
-        run: pylint selenium_utils
+        run: |
+          ruff check selenium_utils
+          ruff format --check selenium_utils
 
       - name: Run Unit Tests
         id: test_step
         continue-on-error: true
         run: |
-          # Placeholder for future unit tests
-          # pytest tests/
           echo "No tests configured yet."
 
       - name: Evaluate Success
         id: evaluate
         if: steps.lint_step.outcome == 'failure' || steps.test_step.outcome == 'failure'
-        run: exit 1 # Force the job to fail so the reporter step triggers
+        run: exit 1
 
       - name: Report Future Version Compatibility Failure
         if: failure()
@@ -63,18 +59,16 @@ jobs:
         run: |
           TITLE="⚠️ Python ${{ matrix.python-version }} Compatibility Failure"
 
-          # 1. Search for existing open issue
           ISSUE_NUMBER=$(gh issue list --state open --search "${TITLE} in:title" --json number --jq '.[0].number')
 
-          # 2. Initialize Labels
           LABELS="python-${{ matrix.python-version }}"
           gh label create "python-${{ matrix.python-version }}" --color "E99695" || true
 
-          # 3. Generate details based on step outcomes
           echo "### Component Failure Breakdown" > details.md
 
           if [ "${{ steps.lint_step.outcome }}" == "failure" ]; then
-            echo "- ❌ **Pylint Analysis** failed." >> details.md
+            # Updated the output text here!
+            echo "- ❌ **Ruff Analysis** failed." >> details.md
             gh label create "lint-failure" --color "D93F0B" || true
             LABELS="${LABELS},lint-failure"
           fi
@@ -88,7 +82,6 @@ jobs:
           echo "" >> details.md
           echo "[View detailed logs for run ${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> details.md
 
-          # 4. Add Comment to existing issue OR create a new one
           if [ -n "$ISSUE_NUMBER" ]; then
             echo "Existing issue found (#$ISSUE_NUMBER). Adding comment..."
 
