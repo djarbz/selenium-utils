@@ -5,8 +5,11 @@
     "LOGALL",
     "msecs",
     "pathvalidate",
+    "pylint",
+    "pytest",
     "seleniumbase",
     "setuptools",
+    "softprops",
     "webelement"
   ]
 }

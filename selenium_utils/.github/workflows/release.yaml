@@ -1,0 +1,35 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Triggers only when a version tag is pushed
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install build tools
+      run: python -m pip install build twine
+
+    - name: Build Python Package
+      run: python -m build
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        # Attach the compiled wheel and tar.gz files to the release
+        files: dist/*
+        # Auto-generate release notes based on your commit history
+        generate_release_notes: true

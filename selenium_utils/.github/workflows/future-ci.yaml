@@ -1,0 +1,121 @@
+name: Future Python Compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run at 00:00 every Monday
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  future-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Define the bleeding-edge versions here
+        python-version: ["3.15", "3.16"]
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pylint pytest
+
+      - name: Analyzing the code with pylint
+        id: lint_step
+        # continue-on-error prevents the step from failing the whole job immediately,
+        # allowing the test step to run so we can gather full metrics.
+        continue-on-error: true
+        run: pylint selenium_utils
+
+      - name: Run Unit Tests
+        id: test_step
+        continue-on-error: true
+        run: |
+          # Placeholder for future unit tests
+          # pytest tests/
+          echo "No tests configured yet."
+
+      - name: Evaluate Success
+        id: evaluate
+        if: steps.lint_step.outcome == 'failure' || steps.test_step.outcome == 'failure'
+        run: exit 1 # Force the job to fail so the reporter step triggers
+
+      - name: Report Future Version Compatibility Failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="⚠️ Python ${{ matrix.python-version }} Compatibility Failure"
+
+          # 1. Search for existing open issue
+          ISSUE_NUMBER=$(gh issue list --state open --search "${TITLE} in:title" --json number --jq '.[0].number')
+
+          # 2. Initialize Labels
+          LABELS="python-${{ matrix.python-version }}"
+          gh label create "python-${{ matrix.python-version }}" --color "E99695" || true
+
+          # 3. Generate details based on step outcomes
+          echo "### Component Failure Breakdown" > details.md
+
+          if [ "${{ steps.lint_step.outcome }}" == "failure" ]; then
+            echo "- ❌ **Pylint Analysis** failed." >> details.md
+            gh label create "lint-failure" --color "D93F0B" || true
+            LABELS="${LABELS},lint-failure"
+          fi
+
+          if [ "${{ steps.test_step.outcome }}" == "failure" ]; then
+            echo "- ❌ **Unit Tests** failed." >> details.md
+            gh label create "test-failure" --color "D93F0B" || true
+            LABELS="${LABELS},test-failure"
+          fi
+
+          echo "" >> details.md
+          echo "[View detailed logs for run ${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> details.md
+
+          # 4. Add Comment to existing issue OR create a new one
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "Existing issue found (#$ISSUE_NUMBER). Adding comment..."
+
+            echo "**New Failure Detected on Branch: \`${{ github.ref_name }}\`**" > comment.md
+            echo "" >> comment.md
+            cat details.md >> comment.md
+
+            gh issue comment "$ISSUE_NUMBER" --body-file comment.md
+
+            IFS=',' read -ra LABEL_ARRAY <<< "$LABELS"
+            for label in "${LABEL_ARRAY[@]}"; do
+              gh issue edit "$ISSUE_NUMBER" --add-label "$label"
+            done
+          else
+            echo "Creating new issue..."
+
+            echo "Automated checks failed for upcoming **Python ${{ matrix.python-version }}**." > body.md
+            echo "" >> body.md
+            cat details.md >> body.md
+            echo "" >> body.md
+            echo "### Environment Details:" >> body.md
+            echo "* **Runner OS:** \`${{ runner.os }}\`" >> body.md
+            echo "* **Branch:** \`${{ github.ref_name }}\`" >> body.md
+            echo "* **Commit:** \`${{ github.sha }}\`" >> body.md
+
+            gh issue create \
+              --title "$TITLE" \
+              --body-file body.md \
+              --label "$LABELS"
+          fi
