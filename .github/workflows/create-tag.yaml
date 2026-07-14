@@ -1,4 +1,5 @@
 name: Create Release Tag
+run-name: Bumping ${{ inputs.bump_type }} release tag by @${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -15,9 +16,9 @@ on:
 
 jobs:
   create_tag:
-    name: Create new tag
-    #runs-on: ubuntu-latest
-    runs-on: [self-hosted, linux]
+    name: Create new ${{ inputs.bump_type }} tag
+    runs-on: ubuntu-latest
+    #runs-on: [self-hosted, linux]
     permissions:
       actions: write
       contents: write
