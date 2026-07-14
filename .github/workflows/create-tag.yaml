@@ -1,7 +1,17 @@
-name: Create Major Tag
+name: Create Release Tag
 
 on:
   workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Select the version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   create_tag:
@@ -21,9 +31,9 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git tag major
-          git push origin major
+          git tag ${{ inputs.bump_type }}
+          git push origin ${{ inputs.bump_type }}
           # Explicitly run our release workflow for this new tag
-          gh workflow run lint-tag.yaml --ref major
+          gh workflow run lint-tag.yaml --ref ${{ inputs.bump_type }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
