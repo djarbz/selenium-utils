@@ -173,6 +173,10 @@ def _log_frame_details(e: Exception) -> None:
         while tb:
             tbi += 1
             code_line = linecache.getline(tb.tb_frame.f_code.co_filename, tb.tb_lineno)
+
+            # THE FIX: Serialize the frame locals immediately into strings
+            safe_locals = {k: str(v) for k, v in tb.tb_frame.f_locals.items()}
+
             logger.log(
                 LOG_TRACE,
                 "Frame[%d] %s in %s:%s [%s]",
@@ -181,7 +185,7 @@ def _log_frame_details(e: Exception) -> None:
                 tb.tb_frame.f_code.co_filename,
                 tb.tb_lineno,
                 code_line,
-                extra={"Frame Vars": tb.tb_frame.f_locals},
+                extra={"Frame Vars": safe_locals},  # Pass the safe locals
             )
             tb = tb.tb_next
     except Exception:
