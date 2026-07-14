@@ -9,11 +9,11 @@ from typing import Any
 
 from seleniumbase import SB
 
-from selenium_utils.misc import add_run_report_item
-from selenium_utils.discord import send_webhook, WebhookConfig
-from selenium_utils.config import APP_DEBUG, LOG_TRACE
-from selenium_utils.selectors import SeleniumSelector
 from selenium_utils.archive import full_page_archive, generate_clean_filename
+from selenium_utils.config import APP_DEBUG, LOG_TRACE
+from selenium_utils.discord import WebhookConfig, send_webhook
+from selenium_utils.misc import add_run_report_item
+from selenium_utils.selectors import SeleniumSelector
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def get_most_recent_project_frame(
     )
 
 
-def handle_exception(
+def handle(
     message: str,
     exc_obj: Exception,
     sb: SB = None,

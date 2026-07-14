@@ -2,14 +2,15 @@
 
 import logging
 from typing import Callable
+
 from seleniumbase import SB
 
-from selenium_utils.config import WINDOW_WIDTH, WINDOW_HEIGHT
-from selenium_utils.browser import wait_browser_ready
+from selenium_utils import exceptions
 from selenium_utils.archive import full_page_archive
-from selenium_utils.exceptions import handle_exception, EXIT_CODE
-from selenium_utils.log import setup_logging
+from selenium_utils.browser import wait_browser_ready
+from selenium_utils.config import WINDOW_HEIGHT, WINDOW_WIDTH
 from selenium_utils.discord import init_webhook
+from selenium_utils.log import setup_logging
 from selenium_utils.misc import RUN_REPORT
 
 logger = logging.getLogger(__name__)
@@ -85,10 +86,10 @@ def run_automation(
 
     except Exception as e:
         if not sb_init:
-            handle_exception("SB Initialization Failed", e, None, "SB>Init")
+            exceptions.handle("SB Initialization Failed", e, None, "SB>Init")
         else:
-            handle_exception("Automation Failed", e, sb, "SB>Loop", url=current_url)
+            exceptions.handle("Automation Failed", e, sb, "SB>Loop", url=current_url)
     finally:
         _log_run_report()
 
-    return EXIT_CODE
+    return exceptions.EXIT_CODE
