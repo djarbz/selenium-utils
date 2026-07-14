@@ -30,3 +30,6 @@ latest_logs/
 #.idea/
 *.swp
 .DS_Store
+
+node_modules
+.ruff_cache

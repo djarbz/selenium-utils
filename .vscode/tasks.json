@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pre-commit: Update Hooks",
+      "type": "shell",
+      "command": "pre-commit autoupdate",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Pre-commit: Run on All Files",
+      "type": "shell",
+      "command": "pre-commit run --all-files",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}
