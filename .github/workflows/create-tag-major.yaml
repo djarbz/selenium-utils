@@ -1,0 +1,29 @@
+name: Create Major Tag
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create_tag:
+    name: Create new tag
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    permissions:
+      actions: write
+      contents: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Create and push new tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag major
+          git push origin major
+          # Explicitly run our release workflow for this new tag
+          gh workflow run lint-tag.yaml --ref major
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
