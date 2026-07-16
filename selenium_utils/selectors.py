@@ -124,6 +124,11 @@ class SeleniumSelector:
         except Exception:
             return False
 
+    def click_js(self, sb):
+        """Forces a click via JavaScript DOM injection, bypassing overlays."""
+        element = self.find_element(sb)
+        sb.execute_script("arguments[0].click();", element)
+
     def text(self, sb: SB) -> str | None:
         return self.find_element(sb).text
 

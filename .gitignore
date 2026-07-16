@@ -33,3 +33,6 @@ latest_logs/
 
 node_modules
 .ruff_cache
+
+# CodeLens Graph local index
+.codelens/
